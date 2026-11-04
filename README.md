@@ -1,92 +1,89 @@
 # Antenna Interference Analyzer
 
-A C11 console project that loads antenna maps into a singly linked list and displays interference locations produced by pairs of antennas with the same frequency.
+A C11 project for analyzing antenna maps with **linked lists and graphs**. It finds interference locations between equal-frequency antennas, builds adjacency lists, supports DFS/BFS traversal and calculates intersections between antenna connections.
 
 Developed by **Filipe Fernandes (31498)** for **Advanced Data Structures (EDA)** at IPCA.
 
-## Scope
+## Two project phases
 
-This repository currently contains the **Phase 1 linked-list implementation**. The final report and assignment also describe **Phase 2 graph algorithms**, but their source files are not present in this repository. DFS, BFS, path enumeration and segment intersections are therefore not available in this version.
+| | Phase 1: linked lists | Phase 2: graphs |
+| --- | --- | --- |
+| Location | Repository root | [`graph/`](graph/) |
+| Data structures | Ordered singly linked antenna list | Vertex list, adjacency lists and interference list |
+| Demo | Load, list, display interference and export binary records | Load, connect equal frequencies, list interference and segment intersections |
+| Additional API | Find, insert and remove antennas | DFS, BFS and native binary persistence |
+| Coordinates | One-based `(row, column)` | Zero-based `(row, column)` |
+| Example map | 9 × 12, 6 antennas | 12 × 12, 4 antennas |
 
-## Features
-
-- Load an antenna map from a text file.
-- Create, search, insert in coordinate order and remove antennas through the C API.
-- Print antenna frequencies and one-based `(row, column)` coordinates.
-- Render same-frequency interference locations as `#` on a grid.
-- Export antennas and interference cells as native binary records.
-
-The executable runs a fixed demonstration pipeline. Insertion and removal functions are available in the API, not through an interactive menu.
+Both source implementations are included. The graph phase was recovered from the latest supplied project archive. **All-path enumeration is not implemented**, and the intersection routine does not yet restrict comparisons to two selected frequency groups.
 
 ## Build and run
 
-Requirements: GCC (or a compatible C compiler with variable-length array support) and Make. Linux, macOS with appropriate command-line tools, or WSL are suitable environments.
+Requirements: GCC (or a compatible C11 compiler with variable-length array support), Make and `ar`. Python 3 is needed for tests. Linux, macOS with command-line build tools, or WSL are suitable environments.
 
-From the repository root:
+Run these commands from the repository root:
 
 ```sh
+# Phase 1
 make
 make run
-```
 
-The program reads `antennas.txt` from the current working directory and writes `antennas.bin` there. The supplied map has **9 rows, 12 columns and 6 antennas**. To try a different map, edit the input file or run the executable from a directory containing another `antennas.txt`.
+# Phase 2: executable and static library
+make graph
+make run-graph
 
-```sh
+# Regression checks for both phases
+make test
+
+# Remove compiled/generated program files
 make clean
 ```
 
-This removes the executable, object files and generated `antennas.bin`.
+Phase 1 reads `antennas.txt` and writes `antennas.bin` in its working directory. `make run-graph` runs inside `graph/`, where the graph executable reads `matrix.txt`. The graph demo prints results but does not call the DFS/BFS or binary APIs; those are available in `libantenna_graph.a` and exercised by the tests. Neither demo provides an interactive menu.
 
-## Input and coordinates
+## Input and interference rule
 
-Each line represents a map row. `.` is an empty cell; other characters represent antenna frequencies. Frequency matching is case-sensitive. Use plain text with LF line endings and no blank rows. The current reader uses a fixed 128-byte buffer, so keep rows to **126 cells or fewer** for newline-terminated input.
+Each text line is a map row. `.` is empty; any other character represents an antenna frequency. Matching is case-sensitive. For equal-frequency antennas at **A** and **B**, the algorithm checks **2A − B** and **2B − A**, retaining positions inside the map bounds.
 
-The data structure stores `x = column` and `y = row`, both starting at 1. Console coordinates are printed as `(row, column)`.
+- **Phase 1:** use LF text, no blank rows and at most 126 cells per row. The grid displays interference as `#` only on empty cells.
+- **Phase 2:** accepts LF/CRLF and a final line without a newline. Rows must have 1–253 cells; blank and oversized rows are rejected. Interference is a separate list and may overlap antennas or contain duplicate positions. Ragged rows use the longest row as the map width.
 
-For two equal-frequency antennas at positions **A** and **B**, the algorithm checks **2A − B** and **2B − A**. It marks in-bounds empty cells with `#`. Different frequencies do not interact.
+The graph example contains two `A` and two `C` antennas. Their segments cross at approximately **(row 5.33, column 4.86)**. No interference candidates fall within this example's map. The original intersection routine prints that crossing four times because each undirected connection is stored in both directions.
 
-## Source layout
+## Source and documentation
 
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
-| [main.c](main.c) | Load, list, render and export demonstration |
-| [antennas.c](antennas.c) | Linked-list operations, input and interference logic |
-| [antennas.h](antennas.h) | Public function declarations |
-| [antenna_types.h](antenna_types.h) | Antenna and binary record structures |
-| [antennas.txt](antennas.txt) | Original example map |
-| [tests/smoke_test.py](tests/smoke_test.py) | Executable behavior checks |
-| [docs/project-guide.md](docs/project-guide.md) | English overview of the assignment and report |
-| [docs/project-report.pdf](docs/project-report.pdf) | Original final report, in Portuguese |
+| [main.c](main.c), [antennas.c](antennas.c), [antennas.h](antennas.h), [antenna_types.h](antenna_types.h) | Phase 1 demo, linked-list API and types |
+| [graph/main.c](graph/main.c) | Graph demonstration |
+| [graph/graph.c](graph/graph.c), [graph/graph.h](graph/graph.h), [graph/graph_types.h](graph/graph_types.h) | Graph storage, interference, intersections and cleanup |
+| [graph/graph_io.c](graph/graph_io.c), [graph/graph_io.h](graph/graph_io.h) | Map loading and binary persistence |
+| [graph/search.c](graph/search.c), [graph/search.h](graph/search.h) | DFS and BFS |
+| [tests/](tests/) | Executable and graph API regression checks |
+| [docs/project-guide.md](docs/project-guide.md) | English guide, API usage and assignment coverage |
+| [docs/archive-notes.md](docs/archive-notes.md) | Archive provenance, filename mapping and integration fixes |
+| [docs/project-report.pdf](docs/project-report.pdf) | Final report from the latest ZIP, in Portuguese |
+| [docs/doxygen-report.pdf](docs/doxygen-report.pdf) | Original generated API report from that ZIP, in Portuguese |
 | [docs/assignment.pdf](docs/assignment.pdf) | Original assignment, in Portuguese |
 
-Source filenames, identifiers, comments and console messages are in English. The original PDFs are retained unchanged as academic source documents; the English guide is a summary, not a full translation.
+Source filenames, identifiers, comments and console messages are in English. The original PDFs remain unchanged; the English guide is not a full translation. The Doxygen PDF documents the original Portuguese API names, mapped in the archive notes.
+
+To generate HTML documentation from the current English source, install Doxygen and run `doxygen Doxyfile` from the root. Output goes to `docs/generated/html/` and is ignored by Git.
 
 ## Validation
 
-```sh
-make
-python3 tests/smoke_test.py
-```
+Both phases compile with `-std=c11 -Wall -Wextra -Wpedantic` without warnings. `make test` checks the Phase 1 sample grid and interference behavior, plus graph connections, DFS/BFS, interference bounds and occupied cells, segment geometry, binary vertex/edge round trips, truncated vertex data, CRLF, missing files, empty maps and oversized rows.
 
-The English version was built with GCC using `-std=c11 -Wall -Wextra -Wpedantic` without warnings. Its supplied-map grid and decoded binary records were compared with the original implementation. Smoke tests cover the supplied map, equal-frequency interference, distinct frequencies and empty input.
+Graph regression checks also passed with AddressSanitizer and UndefinedBehaviorSanitizer. Leak detection was disabled because the validation environment does not support LeakSanitizer. Doxygen generation was not run in that environment.
 
-## Known limitations
+## Remaining limitations
 
-- The assignment allows interference on occupied antenna locations; this implementation only marks empty cells and preserves antenna characters.
-- Interference is rendered in a temporary grid, not stored as a separate linked list as requested in the assignment.
-- Binary export derives bounds from antenna positions, so it may omit interference in empty outer margins of the original map.
-- Binary output writes native C structures, including platform-dependent layout; it is not a portable interchange format.
-- The original list API does not safely handle every duplicate-coordinate case, and the demo does not free the full list before exit.
-- Very large maps are unsuitable for the fixed line buffer and stack-allocated grids. File-write failures are not fully checked.
-
-The translation preserves the existing algorithm. These limitations are documented rather than presented as completed requirements.
-
-## Next steps
-
-- Recover the Phase 2 graph implementation from the final project archive.
-- Improve input validation, memory ownership and binary error handling.
-- Represent interference independently from antenna display and preserve full map bounds during export.
-- Add portable persistence and broader automated tests.
+- Phase 1 preserves the earlier implementation: interference exists only in a temporary grid, binary bounds derive from occupied cells, duplicate-coordinate insertion has unsafe cases, and the demo does not release the antenna list on exit.
+- Graph interference entries and segment crossings are not deduplicated. Intersections include endpoint contacts and same-frequency pairs; parallel/collinear segments return no intersection.
+- DFS is recursive; dense graphs and large inputs are unsuitable for the current algorithms. Allocation-failure results are not always distinguishable from empty results, and graph connection can leave partial edges on allocation failure.
+- The graph connector is intended to run once per freshly loaded graph. Repeating it adds duplicate adjacency records.
+- Both binary formats use native C types and are platform-dependent. The graph reader restores vertices and edges only; it intentionally ignores the interference trailer and does not validate the graph's semantic consistency.
+- Phase 1 file-write errors are not fully checked. No all-path enumeration or interactive graph operations are included.
 
 ## License
 

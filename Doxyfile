@@ -1,0 +1,13 @@
+PROJECT_NAME = "Antenna Interference Analyzer"
+PROJECT_BRIEF = "Linked-list and graph antenna analysis in C"
+OUTPUT_DIRECTORY = docs/generated
+OUTPUT_LANGUAGE = English
+INPUT = README.md antennas.h antenna_types.h antennas.c main.c graph
+RECURSIVE = YES
+FILE_PATTERNS = *.c *.h *.md
+USE_MDFILE_AS_MAINPAGE = README.md
+EXTRACT_ALL = YES
+GENERATE_HTML = YES
+GENERATE_LATEX = NO
+HAVE_DOT = NO
+QUIET = YES
