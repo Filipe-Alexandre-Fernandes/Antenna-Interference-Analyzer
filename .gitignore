@@ -1,0 +1,14 @@
+*.o
+*.bin
+/antenna-analyzer
+/antenna-analyzer.exe
+/build/
+.vs/
+.vscode/
+.DS_Store
+*.a
+/graph/antenna-graph
+/graph/antenna-graph.exe
+/graph/graph-tests
+/graph/graph-tests.exe
+/docs/generated/

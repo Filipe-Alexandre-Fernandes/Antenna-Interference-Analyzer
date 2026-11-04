@@ -1,13 +1,27 @@
-all: prog
+CC = gcc
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -O2
+TARGET = antenna-analyzer
 
-FuncoesAntenas.o: FuncoesAntenas.c FuncoesAntenas.h estruturas.h
-	gcc -c FuncoesAntenas.c
+.PHONY: all run clean
+all: $(TARGET)
 
-prog: FuncoesAntenas.o main.c
-	gcc main.c FuncoesAntenas.o -o prog
+$(TARGET): main.o antennas.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-run:
-	./prog
+main.o antennas.o: antennas.h antenna_types.h
+
+run: $(TARGET)
+	./$(TARGET)
 
 clean:
-	rm -f *.o prog
+	$(MAKE) -C graph clean
+	rm -f *.o $(TARGET) antennas.bin
+
+.PHONY: graph run-graph test
+graph:
+	$(MAKE) -C graph
+run-graph:
+	$(MAKE) -C graph run
+test: all
+	python3 tests/smoke_test.py
+	$(MAKE) -C graph test

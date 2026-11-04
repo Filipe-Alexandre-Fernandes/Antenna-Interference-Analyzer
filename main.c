@@ -1,42 +1,32 @@
-/*!
- * @file main.c
- * @brief Utilização das funções implementadas em FuncoesAntenas.c
- * @author Filipe
- * @date 2025-03-23
+/** @file main.c
+ * @brief Antenna interference analysis project.
+ * @author Filipe Fernandes
  */
-
-
 #include <stdio.h>
 #include <stdbool.h>
-#include "FuncoesAntenas.h"
+#include "antennas.h"
 
 int main() {
-    Antena* lista = NULL;
-    int linhas = 0, colunas = 0;
+    Antenna* list = NULL;
+    int rows = 0, columns = 0;
 
-    // Nome do txt
-    const char* nomeFicheiroTxt = "antenas.txt";
+    const char* input_filename = "antennas.txt";
 
-    // Carregar antenas
-    lista = CarregarAntenasDeFicheiro(nomeFicheiroTxt, &linhas, &colunas);
-    if (!lista) {
-        printf("Erro ao carregar antenas do ficheiro.\n");
+    list = load_antennas_from_file(input_filename, &rows, &columns);
+    if (!list) {
+        printf("Could not load antennas from the input file.\n");
         return 1;
     }
 
-    // Mostrar antenas carregadas
-    printf("Antenas carregadas da matriz (%d linhas x %d colunas):\n", linhas, colunas);
-    ListarAntenas(lista);
+    printf("Antennas loaded from grid (%d rows x %d columns):\n", rows, columns);
+    list_antennas(list);
 
-    // Calcular e mostrar interferências
-    CalcularInterferencias(lista, linhas, colunas);
+    print_interference_grid(list, rows, columns);
 
-    // Gravar em ficheiro binário
-    if (GravarAntenasBinario("antenas.bin", lista))
-        printf("\nAntenas gravadas com sucesso em 'antenas.bin'.\n");
+    if (save_antennas_binary("antennas.bin", list))
+        printf("\nAntennas successfully saved to 'antennas.bin'.\n");
     else
-        printf("\nErro ao gravar as antenas no ficheiro binário.\n");
+        printf("\nCould not save antennas to the binary file.\n");
 
-    
     return 0;
 }
